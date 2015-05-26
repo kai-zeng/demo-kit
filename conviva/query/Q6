@@ -25,3 +25,4 @@ FROM
 WHERE t1.KEY = t2.KEY
   AND t2.bufratio > 2 * t1.avgbufratio
 GROUP BY cast(cleanedplaytimems / 5000 AS int)
+ORDER BY bin

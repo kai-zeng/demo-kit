@@ -8,3 +8,4 @@ FROM
               0) cleanedplaytimems
    FROM anon_sdm2_ss) t
 GROUP BY cast(bufratio/0.1 AS int)
+ORDER BY bin

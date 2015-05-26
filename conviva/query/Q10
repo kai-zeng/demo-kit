@@ -41,3 +41,5 @@ FROM
      AND lifeAverageBitrateKbps < 1.5*avgbitrate) tmp
 GROUP BY citycf,
          cdn
+ORDER BY citycf,
+         cdn

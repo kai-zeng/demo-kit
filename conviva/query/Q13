@@ -30,3 +30,5 @@ FROM
    GROUP BY resources.cdn[0]) t2
 WHERE t1.cdn = t2.cdn
   AND t1.avgbufratio > t2.avgbufratio*2
+ORDER BY t1.cdn,
+         t1.hour

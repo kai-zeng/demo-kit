@@ -66,3 +66,5 @@ FROM
             resources.cdn[0]) AS s2
 WHERE s1.citycf=s2.citycf
   AND s1.cdn = s2.cdn
+ORDER BY s1.citycf,
+         s1.cdn

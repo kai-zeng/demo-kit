@@ -17,3 +17,4 @@ FROM
      AND lifeAverageBitrateKbps > 0) t2
 WHERE t1.KEY = t2.KEY
   AND t1.avgbufratio > t2.avgbufratio*2
+ORDER BY t1.hour

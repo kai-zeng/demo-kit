@@ -8,3 +8,4 @@ WHERE resources.cdn[0] IN ('01efe38fa3063633',
                            '3cc455ad4ece816b',
                            '9fd6a85fdc57a0a7')
 GROUP BY resources.cdn[0]
+ORDER BY cdn
