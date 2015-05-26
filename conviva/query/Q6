@@ -1,0 +1,27 @@
+SELECT cast(cleanedplaytimems / 5000 AS int) bin,
+       count(1)
+FROM
+  (SELECT 0 AS KEY,
+          avg(bufratio) avgbufratio
+   FROM
+     (SELECT 0 AS KEY,
+             if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio,
+             IF (playtimems > 0,
+                 playtimems,
+                 0) cleanedplaytimems
+      FROM anon_sdm2_ss) t) t1,
+  (SELECT 0 AS KEY,
+          IF(bufftimems > 0,
+             bufftimems,
+             0) / (IF(bufftimems > 0,
+                      bufftimems,
+                      0) + IF(playtimems > 0,
+                              playtimems,
+                              0)) bufratio,
+            IF (playtimems > 0,
+                playtimems,
+                0) cleanedplaytimems
+   FROM anon_sdm2_ss) t2
+WHERE t1.KEY = t2.KEY
+  AND t2.bufratio > 2 * t1.avgbufratio
+GROUP BY cast(cleanedplaytimems / 5000 AS int)

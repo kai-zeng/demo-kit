@@ -1,0 +1,32 @@
+SELECT t1.cdn,
+       t1.hour,
+       t1.avgbufratio
+FROM
+  (SELECT resources.cdn[0] AS cdn,
+          cast(starttimems/3600000 AS int) AS hour,
+          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
+   FROM anon_sdm2_ss
+   WHERE resources.cdn[0] IN ('01efe38fa3063633',
+                              'eac205e78a4bcd26',
+                              '4dc2b21f008fb9e9',
+                              '00e7df385da30112',
+                              '3cc455ad4ece816b',
+                              '9fd6a85fdc57a0a7')
+     AND citycf = 61
+     AND lifeAverageBitrateKbps > 0
+   GROUP BY resources.cdn[0],
+            cast(starttimems/3600000 AS int)) t1,
+  (SELECT resources.cdn[0] AS cdn,
+          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
+   FROM anon_sdm2_ss
+   WHERE resources.cdn[0] IN ('01efe38fa3063633',
+                              'eac205e78a4bcd26',
+                              '4dc2b21f008fb9e9',
+                              '00e7df385da30112',
+                              '3cc455ad4ece816b',
+                              '9fd6a85fdc57a0a7')
+     AND citycf = 61
+     AND lifeAverageBitrateKbps > 0
+   GROUP BY resources.cdn[0]) t2
+WHERE t1.cdn = t2.cdn
+  AND t1.avgbufratio > t2.avgbufratio*2

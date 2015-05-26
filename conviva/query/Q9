@@ -1,0 +1,43 @@
+SELECT citycf,
+       cdn,
+       avg(bufratio) AS avgbufratio
+FROM
+  (SELECT t.citycf AS citycf,
+          resources.cdn[0] AS cdn,
+          if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) AS bufratio
+   FROM anon_sdm2_ss,
+     (SELECT citycf,
+             avg(lifeAverageBitrateKbps) AS avgbitrate
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] IN ('01efe38fa3063633',
+                                 'eac205e78a4bcd26',
+                                 '4dc2b21f008fb9e9',
+                                 '00e7df385da30112',
+                                 '3cc455ad4ece816b',
+                                 '9fd6a85fdc57a0a7')
+        AND citycf IN (61,
+                       66,
+                       90,
+                       80,
+                       77,
+                       50)
+        AND lifeAverageBitrateKbps > 0
+      GROUP BY citycf) t
+   WHERE resources.cdn[0] IN ('01efe38fa3063633',
+                              'eac205e78a4bcd26',
+                              '4dc2b21f008fb9e9',
+                              '00e7df385da30112',
+                              '3cc455ad4ece816b',
+                              '9fd6a85fdc57a0a7')
+     AND anon_sdm2_ss.citycf IN (61,
+                                 66,
+                                 90,
+                                 80,
+                                 77,
+                                 50)
+     AND lifeAverageBitrateKbps > 0
+     AND anon_sdm2_ss.citycf = t.citycf
+     AND lifeAverageBitrateKbps > 0.5*avgbitrate
+     AND lifeAverageBitrateKbps < 1.5*avgbitrate) tmp
+GROUP BY citycf,
+         cdn

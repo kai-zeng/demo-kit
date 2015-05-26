@@ -1,0 +1,19 @@
+SELECT t1.hour,
+       t1.avgbufratio
+FROM
+  (SELECT 0 AS KEY,
+          cast(starttimems/3600000 AS int) AS hour,
+          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
+   FROM anon_sdm2_ss
+   WHERE resources.cdn[0] = 'eac205e78a4bcd26'
+     AND citycf = 61
+     AND lifeAverageBitrateKbps > 0
+   GROUP BY cast(starttimems/3600000 AS int)) t1,
+  (SELECT 0 AS KEY,
+          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
+   FROM anon_sdm2_ss
+   WHERE resources.cdn[0] = 'eac205e78a4bcd26'
+     AND citycf = 61
+     AND lifeAverageBitrateKbps > 0) t2
+WHERE t1.KEY = t2.KEY
+  AND t1.avgbufratio > t2.avgbufratio*2
