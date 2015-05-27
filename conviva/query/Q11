@@ -1,70 +1,43 @@
-SELECT s1.citycf,
-       s1.cdn,
-       s1.failures/s2.total
+SELECT s1.citycf citycf,
+       s1.cdn cdn,
+       s1.failures/s2.total failurerate
 FROM
-  (SELECT citycf,
+  (SELECT t1.citycf,
           cdn,
-          count(1) AS failures
+          count(1) failures
    FROM
-     (SELECT t.citycf AS citycf,
-             resources.cdn[0] AS cdn
-      FROM anon_sdm2_ss,
-        (SELECT citycf,
-                avg(lifeAverageBitrateKbps) AS avgbitrate
-         FROM anon_sdm2_ss
-         WHERE resources.cdn[0] IN ('01efe38fa3063633',
-                                    'eac205e78a4bcd26',
-                                    '4dc2b21f008fb9e9',
-                                    '00e7df385da30112',
-                                    '3cc455ad4ece816b',
-                                    '9fd6a85fdc57a0a7')
-           AND citycf IN (61,
-                          66,
-                          90,
-                          80,
-                          77,
-                          50)
-           AND lifeAverageBitrateKbps > 0
-         GROUP BY citycf) t
-      WHERE resources.cdn[0] IN ('01efe38fa3063633',
-                                 'eac205e78a4bcd26',
-                                 '4dc2b21f008fb9e9',
-                                 '00e7df385da30112',
-                                 '3cc455ad4ece816b',
-                                 '9fd6a85fdc57a0a7')
-        AND anon_sdm2_ss.citycf IN (61,
-                                    66,
-                                    90,
-                                    80,
-                                    77,
-                                    50)
+     (SELECT citycf,
+             resources.cdn[0] cdn
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] IN ('01efe38fa3063633', 'eac205e78a4bcd26', '4dc2b21f008fb9e9', '00e7df385da30112', '3cc455ad4ece816b', '9fd6a85fdc57a0a7')
+        AND anon_sdm2_ss.citycf IN (61, 66, 90, 80, 77, 50)
         AND lifeAverageBitrateKbps > 0
-        AND anon_sdm2_ss.citycf = t.citycf
-        AND lifeAverageBitrateKbps > 0.5*avgbitrate
-        AND lifeAverageBitrateKbps < 1.5*avgbitrate
-        AND jointimems < 0) tmp
-   GROUP BY citycf,
-            cdn) AS s1,
-
+        AND jointimems < 0) t1,
+     (SELECT citycf,
+             ApproxMedian(count(if(lifeAverageBitrateKbps <= 2000, 1, NULL)), 
+                          count(if(lifeAverageBitrateKbps > 2000 AND lifeAverageBitrateKbps <= 4000, 1, NULL)), 
+                          count(if(lifeAverageBitrateKbps > 4000 AND lifeAverageBitrateKbps <= 6000, 1, NULL)), 
+                          count(if(lifeAverageBitrateKbps > 6000 AND lifeAverageBitrateKbps <= 8000, 1, NULL)), 
+                          count(if(lifeAverageBitrateKbps > 8000 AND lifeAverageBitrateKbps <= 10000, 1, NULL))) medianbitrate
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] IN ('01efe38fa3063633', 'eac205e78a4bcd26', '4dc2b21f008fb9e9', '00e7df385da30112', '3cc455ad4ece816b', '9fd6a85fdc57a0a7')
+        AND citycf IN (61, 66, 90, 80, 77, 50)
+        AND lifeAverageBitrateKbps > 0
+      GROUP BY citycf) t2
+   WHERE t1.citycf = t2.citycf
+     AND lifeAverageBitrateKbps > medianbitrate - 1000
+     AND lifeAverageBitrateKbps <= medianbitrate + 1000
+   GROUP BY t1.citycf,
+            cdn) s1,
   (SELECT citycf,
-          resources.cdn[0] AS cdn,
-                       count(1) AS total
-   FROM anon_sdm2_ss
-   WHERE resources.cdn[0] IN ('01efe38fa3063633',
-                              'eac205e78a4bcd26',
-                              '4dc2b21f008fb9e9',
-                              '00e7df385da30112',
-                              '3cc455ad4ece816b',
-                              '9fd6a85fdc57a0a7')
-     AND citycf IN (61,
-                    66,
-                    90,
-                    80,
-                    77,
-                    50)
-   GROUP BY citycf,
-            resources.cdn[0]) AS s2
+          resources.cdn[0] cdn,
+          count(1) total
+  FROM anon_sdm2_ss
+  WHERE resources.cdn[0] IN ('01efe38fa3063633', 'eac205e78a4bcd26', '4dc2b21f008fb9e9', '00e7df385da30112', '3cc455ad4ece816b', '9fd6a85fdc57a0a7')
+    AND citycf IN (61, 66, 90, 80, 77, 50)
+  GROUP BY citycf,
+           resources.cdn[0]) s2
 WHERE s1.citycf=s2.citycf
   AND s1.cdn = s2.cdn
-ORDER BY s1.citycf,
-         s1.cdn
+ORDER BY citycf,
+         cdn

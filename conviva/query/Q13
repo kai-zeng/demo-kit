@@ -1,34 +1,51 @@
 SELECT t1.cdn,
-       t1.hour,
-       t1.avgbufratio
+       t1.dt,
+       t1.medianbufratio
 FROM
-  (SELECT resources.cdn[0] AS cdn,
-          cast(starttimems/3600000 AS int) AS hour,
-          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
-   FROM anon_sdm2_ss
-   WHERE resources.cdn[0] IN ('01efe38fa3063633',
-                              'eac205e78a4bcd26',
-                              '4dc2b21f008fb9e9',
-                              '00e7df385da30112',
-                              '3cc455ad4ece816b',
-                              '9fd6a85fdc57a0a7')
-     AND citycf = 61
-     AND lifeAverageBitrateKbps > 0
-   GROUP BY resources.cdn[0],
-            cast(starttimems/3600000 AS int)) t1,
-  (SELECT resources.cdn[0] AS cdn,
-          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
-   FROM anon_sdm2_ss
-   WHERE resources.cdn[0] IN ('01efe38fa3063633',
-                              'eac205e78a4bcd26',
-                              '4dc2b21f008fb9e9',
-                              '00e7df385da30112',
-                              '3cc455ad4ece816b',
-                              '9fd6a85fdc57a0a7')
-     AND citycf = 61
-     AND lifeAverageBitrateKbps > 0
-   GROUP BY resources.cdn[0]) t2
+  (SELECT cdn,
+          dt,
+          ApproxMedian(count(if(bufratio <= 0.2, 1, NULL)), 
+                       count(if(bufratio > 0.2 AND bufratio <= 0.4, 1, NULL)), 
+                       count(if(bufratio > 0.4 AND bufratio <= 0.6, 1, NULL)), 
+                       count(if(bufratio > 0.6 AND bufratio <= 0.8, 1, NULL)), 
+                       count(if(bufratio > 0.8, 1, NULL)) ) medianbufratio
+   FROM
+     (SELECT resources.cdn[0] cdn,
+             dt,
+             if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] IN ('01efe38fa3063633',
+                                 'eac205e78a4bcd26',
+                                 '4dc2b21f008fb9e9',
+                                 '00e7df385da30112',
+                                 '3cc455ad4ece816b',
+                                 '9fd6a85fdc57a0a7')
+        AND citycf = 61
+        AND dt >= 'd2012_10_09_08_00_to_2012_10_10_08_00/'
+        AND dt <= 'd2012_08_22_08_00_to_2012_08_23_08_00/'
+        AND lifeAverageBitrateKbps > 0) s1
+   GROUP BY cdn,
+            dt) t1,
+  (SELECT cdn,
+          ApproxMedian(count(if(bufratio <= 0.2, 1, NULL)), 
+                       count(if(bufratio > 0.2 AND bufratio <= 0.4, 1, NULL)), 
+                       count(if(bufratio > 0.4 AND bufratio <= 0.6, 1, NULL)), 
+                       count(if(bufratio > 0.6 AND bufratio <= 0.8, 1, NULL)), 
+                       count(if(bufratio > 0.8, 1, NULL))) medianbufratio
+   FROM
+     (SELECT resources.cdn[0] cdn,
+             if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] IN ('01efe38fa3063633',
+                                 'eac205e78a4bcd26',
+                                 '4dc2b21f008fb9e9',
+                                 '00e7df385da30112',
+                                 '3cc455ad4ece816b',
+                                 '9fd6a85fdc57a0a7')
+        AND citycf = 61
+        AND lifeAverageBitrateKbps > 0) s2
+   GROUP BY cdn) t2
 WHERE t1.cdn = t2.cdn
-  AND t1.avgbufratio > t2.avgbufratio*2
+  AND t1.medianbufratio > t2.medianbufratio + 0.15
 ORDER BY t1.cdn,
-         t1.hour
+         t1.dt

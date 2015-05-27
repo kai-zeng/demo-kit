@@ -1,5 +1,5 @@
-SELECT resources.cdn[0] AS cdn,
-       count(1) AS cnt
+SELECT resources.cdn[0] cdn,
+       count(1) cnt
 FROM anon_sdm2_ss
 WHERE resources.cdn[0] IN ('01efe38fa3063633',
                            'eac205e78a4bcd26',

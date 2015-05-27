@@ -1,20 +1,33 @@
-SELECT t1.hour,
+SELECT t1.dt,
        t1.avgbufratio
 FROM
-  (SELECT 0 AS KEY,
-          cast(starttimems/3600000 AS int) AS hour,
-          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
-   FROM anon_sdm2_ss
-   WHERE resources.cdn[0] = 'eac205e78a4bcd26'
-     AND citycf = 61
-     AND lifeAverageBitrateKbps > 0
-   GROUP BY cast(starttimems/3600000 AS int)) t1,
-  (SELECT 0 AS KEY,
-          avg(if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0))) AS avgbufratio
-   FROM anon_sdm2_ss
-   WHERE resources.cdn[0] = 'eac205e78a4bcd26'
-     AND citycf = 61
-     AND lifeAverageBitrateKbps > 0) t2
+  (SELECT 0 key,
+          dt
+          ApproxMedian(count(if(bufratio <= 0.2, 1, NULL)), 
+                        count(if(bufratio > 0.2 AND bufratio <= 0.4, 1, NULL)), 
+                        count(if(bufratio > 0.4 AND bufratio <= 0.6, 1, NULL)), 
+                        count(if(bufratio > 0.6 AND bufratio <= 0.8, 1, NULL)), 
+                        count(if(bufratio > 0.8, 1, NULL))) medianbufratio
+   FROM
+     (SELECT dt,
+             if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) avgbufratio
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] = 'eac205e78a4bcd26'
+        AND citycf = 61
+        AND lifeAverageBitrateKbps > 0) s1
+   GROUP BY dt) t1,
+  (SELECT 0 key,
+          ApproxMedian(count(if(bufratio <= 0.2, 1, NULL)), 
+                       count(if(bufratio > 0.2 AND bufratio <= 0.4, 1, NULL)), 
+                       count(if(bufratio > 0.4 AND bufratio <= 0.6, 1, NULL)), 
+                       count(if(bufratio > 0.6 AND bufratio <= 0.8, 1, NULL)), 
+                       count(if(bufratio > 0.8, 1, NULL))) medianbufratio
+   FROM
+     (SELECT if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio
+      FROM anon_sdm2_ss
+      WHERE resources.cdn[0] = 'eac205e78a4bcd26'
+        AND citycf = 61
+        AND lifeAverageBitrateKbps > 0) s2) t2
 WHERE t1.KEY = t2.KEY
-  AND t1.avgbufratio > t2.avgbufratio*2
-ORDER BY t1.hour
+  AND t1.avgbufratio > t2.medianbufratio + 0.15
+ORDER BY t1.dt

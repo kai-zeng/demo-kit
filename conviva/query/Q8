@@ -1,14 +1,14 @@
 SELECT avg(cleanedplaytimems),
        count(1)
 FROM
-  (SELECT 0 AS KEY,
+  (SELECT 0 key,
           avg(lifeAverageBitrateKbps) avgbitrate
    FROM anon_sdm2_ss
    WHERE lifeAverageBitrateKbps > 0) t1,
-  (SELECT 0 AS KEY,
+  (SELECT 0 key,
           lifeAverageBitrateKbps,
           if(playtimems > 0, playtimems, 0) cleanedplaytimems
    FROM anon_sdm2_ss
    WHERE lifeAverageBitrateKbps > 0) t2
-WHERE t1.KEY=t2.KEY
+WHERE t1.key=t2.key
   AND t2.lifeAverageBitrateKbps < 0.5 * t1.avgbitrate

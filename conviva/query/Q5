@@ -1,8 +1,7 @@
 SELECT cast(bufratio/0.1 AS int) bin,
        avg(cleanedplaytimems)
 FROM
-  (SELECT 0 AS KEY,
-          if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio,
+  (SELECT if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio,
           if(playtimems > 0, playtimems, 0) cleanedplaytimems
    FROM anon_sdm2_ss) t
 GROUP BY cast(bufratio/0.1 AS int)
