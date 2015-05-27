@@ -4,7 +4,7 @@ SELECT citycf,
 FROM
   (SELECT t.citycf AS citycf,
           resources.cdn[0] AS cdn,
-          if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) AS bufratio
+          if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio
    FROM anon_sdm2_ss,
      (SELECT citycf,
              avg(lifeAverageBitrateKbps) AS avgbitrate
