@@ -7,7 +7,8 @@ FROM
           count(1) failures
    FROM
      (SELECT citycf,
-             resources.cdn[0] cdn
+             resources.cdn[0] cdn,
+             lifeAverageBitrateKbps
       FROM anon_sdm2_ss
       WHERE resources.cdn[0] IN ('01efe38fa3063633', 'eac205e78a4bcd26', '4dc2b21f008fb9e9', '00e7df385da30112', '3cc455ad4ece816b', '9fd6a85fdc57a0a7')
         AND anon_sdm2_ss.citycf IN (61, 66, 90, 80, 77, 50)
