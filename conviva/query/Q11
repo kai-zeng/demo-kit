@@ -2,7 +2,7 @@ SELECT s1.citycf citycf,
        s1.cdn cdn,
        s1.failures/s2.total failurerate
 FROM
-  (SELECT t1.citycf,
+  (SELECT t1.citycf citycf,
           cdn,
           count(1) failures
    FROM
