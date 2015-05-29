@@ -1,33 +1,8 @@
-SELECT t1.dt,
-       t1.avgbufratio
+SELECT count(if(bufratio < 0.05, 1, NULL)) / count(bufratio) goodratio,
+       count(if(bufratio >= 0.05, 1, NULL)) / count(bufratio) badratio,
+       count(bufratio) cnt
 FROM
-  (SELECT 0 key,
-          dt
-          ApproxMedian(count(if(bufratio <= 0.2, 1, NULL)), 
-                        count(if(bufratio > 0.2 AND bufratio <= 0.4, 1, NULL)), 
-                        count(if(bufratio > 0.4 AND bufratio <= 0.6, 1, NULL)), 
-                        count(if(bufratio > 0.6 AND bufratio <= 0.8, 1, NULL)), 
-                        count(if(bufratio > 0.8, 1, NULL))) medianbufratio
-   FROM
-     (SELECT dt,
-             if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) avgbufratio
-      FROM anon_sdm2_ss
-      WHERE resources.cdn[0] = 'eac205e78a4bcd26'
-        AND citycf = 61
-        AND lifeAverageBitrateKbps > 0) s1
-   GROUP BY dt) t1,
-  (SELECT 0 key,
-          ApproxMedian(count(if(bufratio <= 0.2, 1, NULL)), 
-                       count(if(bufratio > 0.2 AND bufratio <= 0.4, 1, NULL)), 
-                       count(if(bufratio > 0.4 AND bufratio <= 0.6, 1, NULL)), 
-                       count(if(bufratio > 0.6 AND bufratio <= 0.8, 1, NULL)), 
-                       count(if(bufratio > 0.8, 1, NULL))) medianbufratio
-   FROM
-     (SELECT if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio
-      FROM anon_sdm2_ss
-      WHERE resources.cdn[0] = 'eac205e78a4bcd26'
-        AND citycf = 61
-        AND lifeAverageBitrateKbps > 0) s2) t2
-WHERE t1.KEY = t2.KEY
-  AND t1.avgbufratio > t2.medianbufratio + 0.15
-ORDER BY t1.dt
+  (SELECT if(bufftimems > 0, bufftimems, 0) / (if(bufftimems > 0, bufftimems, 0) + if(playtimems > 0, playtimems, 0)) bufratio
+   FROM anon_sdm2_ss
+   WHERE resources.cdn[0] IN ('01efe38fa3063633', 'eac205e78a4bcd26', '4dc2b21f008fb9e9', '00e7df385da30112', '3cc455ad4ece816b', '9fd6a85fdc57a0a7')
+     AND citycf IN (61, 66, 90, 80, 77, 50) ) t
