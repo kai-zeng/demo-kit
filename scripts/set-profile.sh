@@ -7,7 +7,7 @@ echo "SPARK_JAVA_OPTS+=' -agentpath:/root/$YJP/bin/linux-x86-64/libyjpagent.so=s
 echo "export SPARK_JAVA_OPTS" >> ~/spark/conf/spark-env.sh
 
 ~/spark-ec2/copy-dir --delete ~/spark/conf/
-cp ~/spark/conf/* /mnt/bootstrap-sql/conf/
+cp ~/spark/conf/* ~/bootstrap-sql/conf/
 
-/mnt/demo-kit/scripts/kill-all.sh && \
-/mnt/demo-kit/scripts/start-all.sh
+~/demo-kit/scripts/kill-all.sh && \
+~/demo-kit/scripts/start-all.sh

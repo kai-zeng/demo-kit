@@ -3,7 +3,7 @@
 # "Usage: set-cluster [memory in GB]"
 
 # stop all
-/mnt/demo-kit/scripts/kill-all.sh
+~/demo-kit/scripts/kill-all.sh
 
 # set up hdfs
 if [ -d '/vol0/persistent-hdfs' ]
@@ -64,4 +64,4 @@ echo "spark.shuffle.consolidateFiles true" >> ~/spark/conf/spark-defaults.conf
 ~/spark-ec2/copy-dir --delete ~/spark/conf
 
 # restart all
-/mnt/demo-kit/scripts/start-all.sh   
+~/demo-kit/scripts/start-all.sh   
