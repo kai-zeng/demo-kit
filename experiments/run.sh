@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /mnt/bootstrap-sql
+cd ~/bootstrap-sql
 
 for option in run-1
 do

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /mnt/bootstrap-sql
+cd ~/bootstrap-sql
 
 for q in {0..13}
 do
